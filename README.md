@@ -14,6 +14,44 @@ Fully local, offline inference — no external API calls required
 
 Ideal for experimentation, development, and learning how to self-host open-weight models.
 
+## Getting Started
+1. Install llama.cpp
+brew install llama.cpp
+
+
+Verify:
+
+llama-server --help
+
+2. Run GPT-OSS-20B locally
+llama-server \
+  -hf ggml-org/gpt-oss-20b-GGUF \
+  --port 8000 \
+  --host 127.0.0.1 \
+  -c 4096
+
+
+This starts a local OpenAI-compatible inference server at:
+
+http://localhost:8000/v1/chat/completions
+
+3. Start the Next.js frontend
+cd frontend
+npm install
+npm run dev
+
+Open in browser:
+
+http://localhost:3000
+
+The app sends requests to /api/chat, which forwards them to the local model.
+
+Environment Variables
+
+Create a .env.local file inside the frontend directory:
+
+LLAMA_BASE_URL=http://localhost:8000
+
 ## Tech Stack
 Backend (Local LLM)
 
@@ -47,43 +85,3 @@ ai-vllm-local-hosting/
 
 
 Since llama-server runs locally, no backend folder is required.
-
-## Getting Started
-1. Install llama.cpp
-brew install llama.cpp
-
-
-Verify:
-
-llama-server --help
-
-2. Run GPT-OSS-20B locally
-llama-server \
-  -hf ggml-org/gpt-oss-20b-GGUF \
-  --port 8000 \
-  --host 127.0.0.1 \
-  -c 4096
-
-
-This starts a local OpenAI-compatible inference server at:
-
-http://localhost:8000/v1/chat/completions
-
-3. Start the Next.js frontend
-cd frontend
-npm install
-npm run dev
-
-
-Open in browser:
-
-http://localhost:3000
-
-
-The app sends requests to /api/chat, which forwards them to the local model.
-
-Environment Variables
-
-Create a .env.local file inside the frontend directory:
-
-LLAMA_BASE_URL=http://localhost:8000

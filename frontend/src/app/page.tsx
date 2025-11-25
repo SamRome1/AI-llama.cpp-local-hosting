@@ -5,6 +5,7 @@ import { FormEvent, useState } from "react";
 type Message = {
   role: "user" | "assistant";
   content: string;
+  explanation?: string; // only for assistant
 };
 
 export default function HomePage() {
@@ -45,11 +46,15 @@ export default function HomePage() {
         return;
       }
 
-      const data: { content: string } = await res.json();
+      const data: { answer: string; explanation?: string } = await res.json();
 
       setMessages([
         ...newMessages,
-        { role: "assistant", content: data.content },
+        {
+          role: "assistant",
+          content: data.answer,
+          explanation: data.explanation,
+        },
       ]);
     } catch (err) {
       console.error(err);
@@ -69,7 +74,7 @@ export default function HomePage() {
     <main className="min-h-screen flex flex-col items-center justify-center bg-black text-white">
       <div className="w-full max-w-2xl border border-gray-700 rounded-xl p-4 flex flex-col gap-4 bg-zinc-900/60">
         <h1 className="text-xl font-semibold text-center">
-          GPT-OSS 20B (local, llama.cpp)
+          GPT-OSS 20B Local-Daily Chat Interface
         </h1>
 
         <div className="flex-1 max-h-[400px] overflow-y-auto space-y-3 border border-gray-800 rounded-lg p-3 bg-black/40">
@@ -80,20 +85,52 @@ export default function HomePage() {
             </p>
           )}
           {messages.map((m, i) => (
-            <div
-              key={i}
-              className={`p-2 rounded-md text-sm whitespace-pre-wrap ${
-                m.role === "user"
-                  ? "bg-emerald-600/30 border border-emerald-500/40 self-end"
-                  : "bg-zinc-800/70 border border-zinc-700"
-              }`}
-            >
-              <strong className="block mb-1 text-xs uppercase text-gray-400">
-                {m.role === "user" ? "You" : "Model"}
-              </strong>
-              {m.content}
+            <div key={i} className="space-y-1">
+              <div
+                className={`p-2 rounded-md text-sm whitespace-pre-wrap ${
+                  m.role === "user"
+                    ? "bg-emerald-600/30 border border-emerald-500/40 self-end"
+                    : "bg-zinc-800/70 border border-zinc-700"
+                }`}
+              >
+                <strong className="block mb-1 text-xs uppercase text-gray-400">
+                  {m.role === "user" ? "You" : "Model"}
+                </strong>
+                {m.role === "assistant" ? (
+                  <div className="space-y-2">
+                    <div>
+                      <div className="text-[10px] font-semibold uppercase tracking-wide text-emerald-400 mb-1">
+                        Answer
+                      </div>
+                      <div>{m.content}</div>
+                    </div>
+                    {m.explanation && m.explanation.trim() !== "" && (
+                      <details className="mt-2 border-t border-zinc-700 pt-2 text-xs text-gray-300 group">
+                        <summary className="cursor-pointer list-none flex items-center justify-between">
+                          <span className="text-[10px] font-semibold uppercase tracking-wide text-gray-400">
+                            Why this answer (short)
+                          </span>
+                          <span className="text-[10px] text-gray-500 group-open:rotate-90 transition-transform">
+                            ▶
+                          </span>
+                        </summary>
+                        <div className="mt-1 whitespace-pre-wrap text-gray-300">
+                          {m.explanation}
+                        </div>
+                      </details>
+                    )}
+                  </div>
+                ) : (
+                  m.content
+                )}
+              </div>
             </div>
           ))}
+          {loading && (
+            <div className="text-xs text-gray-400 animate-pulse">
+              Model is thinking…
+            </div>
+          )}
         </div>
 
         <form onSubmit={handleSubmit} className="flex gap-2">
