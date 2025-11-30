@@ -1,4 +1,4 @@
-## AI-vllm-local-hosting
+## AI-llama.cpp-local-hosting
 
 A local AI playground for running open-source LLMs (GPT-OSS-20B) directly on macOS using llama.cpp, paired with a Next.js + TypeScript frontend chat interface.
 
