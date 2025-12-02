@@ -3,6 +3,7 @@
 import { FormEvent, useState, useEffect } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useAuth } from "@/../lib/supabase/auth-provider";
+import { useWorkspaces } from "@/../lib/hooks/useWorkspaces";
 
 type Message = {
   role: "user" | "assistant";
@@ -14,10 +15,13 @@ export default function ChatPage() {
   const { user, loading: authLoading } = useAuth();
   const router = useRouter();
   const searchParams = useSearchParams();
+  const workspaceId = searchParams.get("workspace");
   const modelId = searchParams.get("model");
+  const { workspaces } = useWorkspaces();
   const [messages, setMessages] = useState<Message[]>([]);
   const [input, setInput] = useState("");
   const [loading, setLoading] = useState(false);
+  const [workspace, setWorkspace] = useState<any>(null);
 
   useEffect(() => {
     if (!authLoading && !user) {
@@ -26,10 +30,17 @@ export default function ChatPage() {
   }, [authLoading, user, router]);
 
   useEffect(() => {
-    if (!modelId) {
+    if (workspaceId && workspaces.length > 0) {
+      const found = workspaces.find((ws) => ws.id === workspaceId);
+      setWorkspace(found || null);
+    }
+  }, [workspaceId, workspaces]);
+
+  useEffect(() => {
+    if (!workspaceId && !modelId) {
       router.push("/home");
     }
-  }, [modelId, router]);
+  }, [workspaceId, modelId, router]);
 
   async function handleSubmit(e: FormEvent) {
     e.preventDefault();
