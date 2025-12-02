@@ -36,7 +36,7 @@ export default function LoginPage() {
           if (data.user && !data.session) {
             setError('Please check your email to confirm your account.')
           } else {
-            router.push('/')
+            router.push('/home')
             router.refresh()
           }
         }
@@ -48,7 +48,7 @@ export default function LoginPage() {
 
         if (error) throw error
 
-        router.push('/')
+        router.push('/home')
         router.refresh()
       }
     } catch (error: any) {
