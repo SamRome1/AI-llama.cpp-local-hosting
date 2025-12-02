@@ -1,6 +1,8 @@
 "use client";
 
-import { FormEvent, useState } from "react";
+import { FormEvent, useState, useEffect } from "react";
+import { useRouter } from "next/navigation";
+import { useAuth } from "@/../lib/supabase/auth-provider";
 
 type Message = {
   role: "user" | "assistant";
@@ -9,9 +11,17 @@ type Message = {
 };
 
 export default function HomePage() {
+  const { user, loading: authLoading } = useAuth();
+  const router = useRouter();
   const [messages, setMessages] = useState<Message[]>([]);
   const [input, setInput] = useState("");
   const [loading, setLoading] = useState(false);
+
+  useEffect(() => {
+    if (!authLoading && !user) {
+      router.push("/login");
+    }
+  }, [authLoading, user, router]);
 
   async function handleSubmit(e: FormEvent) {
     e.preventDefault();
@@ -72,10 +82,24 @@ export default function HomePage() {
 
   return (
     <main className="min-h-screen flex flex-col items-center justify-center bg-black text-white">
-      <div className="w-full max-w-2xl border border-gray-700 rounded-xl p-4 flex flex-col gap-4 bg-zinc-900/60">
-        <h1 className="text-xl font-semibold text-center">
-          GPT-OSS 20B Local-Daily Chat Interface
-        </h1>
+      {authLoading ? (
+        <div className="text-gray-400">Loading...</div>
+      ) : (
+        <div className="w-full max-w-2xl border border-gray-700 rounded-xl p-4 flex flex-col gap-4 bg-zinc-900/60">
+          <div className="flex items-center justify-between">
+            <h1 className="text-xl font-semibold">
+              GPT-OSS 20B Local-Daily Chat Interface
+            </h1>
+            <button
+              onClick={async () => {
+                await fetch("/api/auth/logout", { method: "POST" });
+                router.push("/login");
+              }}
+              className="text-sm px-3 py-1 rounded-lg bg-red-600/20 border border-red-700 text-red-400 hover:bg-red-600/30 transition"
+            >
+              Logout
+            </button>
+          </div>
 
         <div className="flex-1 max-h-[400px] overflow-y-auto space-y-3 border border-gray-800 rounded-lg p-3 bg-black/40">
           {messages.length === 0 && (
@@ -149,7 +173,8 @@ export default function HomePage() {
             {loading ? "Sending..." : "Send"}
           </button>
         </form>
-      </div>
+        </div>
+      )}
     </main>
   );
 }
